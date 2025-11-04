@@ -160,33 +160,50 @@
             formData.append('link_cardmarket', form.link_cardmarket.value)
             formData.append('note', form.note.value)
 
-            // Gestisci foto_fronte
-            if (form.foto_fronte.files.length > 0) {
-                const file1 = form.foto_fronte.files[0]
-                const reader1 = new FileReader()
-                reader1.onload = () => {
-                    formData.append('foto_fronte_file', reader1.result.split(',')[1])
-                    formData.append('foto_fronte_filename', file1.name)
-                    formData.append('foto_fronte_mimetype', file1.type)
-                    
-                    // Gestisci foto_retro
-                    if (form.foto_retro.files.length > 0) {
-                        const file2 = form.foto_retro.files[0]
-                        const reader2 = new FileReader()
-                        reader2.onload = () => {
-                            formData.append('foto_retro_file', reader2.result.split(',')[1])
-                            formData.append('foto_retro_filename', file2.name)
-                            formData.append('foto_retro_mimetype', file2.type)
-                            inviaFormData()
-                        }
-                        reader2.readAsDataURL(file2)
-                    } else {
-                        inviaFormData()
-                    }
-                }
-                reader1.readAsDataURL(file1)
-            } else {
+            // Conta quanti file abbiamo
+            let filesProcessed = 0
+            let totalFiles = 0
+
+            if (form.foto_fronte.files.length > 0) totalFiles++
+            if (form.foto_retro.files.length > 0) totalFiles++
+
+            if (totalFiles === 0) {
+                // Nessun file, invia subito
                 inviaFormData()
+            } else {
+                // Processa foto_fronte
+                if (form.foto_fronte.files.length > 0) {
+                    const file = form.foto_fronte.files[0]
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                        const base64 = reader.result.split(',')[1]
+                        formData.append('foto_fronte_data', base64)
+                        formData.append('foto_fronte_filename', file.name)
+                        formData.append('foto_fronte_mime', file.type)
+                        filesProcessed++
+                        if (filesProcessed === totalFiles) inviaFormData()
+                    }
+                    reader.readAsDataURL(file)
+                } else {
+                    filesProcessed++
+                }
+
+                // Processa foto_retro
+                if (form.foto_retro.files.length > 0) {
+                    const file = form.foto_retro.files[0]
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                        const base64 = reader.result.split(',')[1]
+                        formData.append('foto_retro_data', base64)
+                        formData.append('foto_retro_filename', file.name)
+                        formData.append('foto_retro_mime', file.type)
+                        filesProcessed++
+                        if (filesProcessed === totalFiles) inviaFormData()
+                    }
+                    reader.readAsDataURL(file)
+                } else {
+                    filesProcessed++
+                }
             }
 
             function inviaFormData() {
