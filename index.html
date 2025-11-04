@@ -41,6 +41,13 @@
             font-size: 14px;
             font-family: Arial, sans-serif;
         }
+        input[type="file"] {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
         textarea {
             resize: vertical;
             min-height: 80px;
@@ -116,13 +123,13 @@
         </div>
 
         <div class="form-group">
-            <label for="foto_fronte">Foto Fronte (URL)</label>
-            <input name="foto_fronte" type="text" placeholder="https://...">
+            <label for="foto_fronte">Foto Fronte</label>
+            <input name="foto_fronte" type="file" accept="image/*">
         </div>
 
         <div class="form-group">
-            <label for="foto_retro">Foto Retro (URL)</label>
-            <input name="foto_retro" type="text" placeholder="https://...">
+            <label for="foto_retro">Foto Retro</label>
+            <input name="foto_retro" type="file" accept="image/*">
         </div>
 
         <button type="submit">Invia Dati</button>
@@ -143,19 +150,60 @@
             messaggio.style.display = 'block'
             button.disabled = true
 
-            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-                .then(response => response.json())
-                .then(data => {
-                    messaggio.textContent = 'Dati inviati con successo!'
-                    messaggio.className = 'successo'
-                    form.reset()
-                    button.disabled = false
-                })
-                .catch(error => {
-                    messaggio.textContent = 'Errore nell\'invio: ' + error.message
-                    messaggio.className = 'errore'
-                    button.disabled = false
-                })
+            const formData = new FormData()
+            
+            // Aggiungi i campi di testo
+            formData.append('codice', form.codice.value)
+            formData.append('nome', form.nome.value)
+            formData.append('quantita', form.quantita.value)
+            formData.append('prezzo', form.prezzo.value)
+            formData.append('link_cardmarket', form.link_cardmarket.value)
+            formData.append('note', form.note.value)
+
+            // Gestisci foto_fronte
+            if (form.foto_fronte.files.length > 0) {
+                const file1 = form.foto_fronte.files[0]
+                const reader1 = new FileReader()
+                reader1.onload = () => {
+                    formData.append('foto_fronte_file', reader1.result.split(',')[1])
+                    formData.append('foto_fronte_filename', file1.name)
+                    formData.append('foto_fronte_mimetype', file1.type)
+                    
+                    // Gestisci foto_retro
+                    if (form.foto_retro.files.length > 0) {
+                        const file2 = form.foto_retro.files[0]
+                        const reader2 = new FileReader()
+                        reader2.onload = () => {
+                            formData.append('foto_retro_file', reader2.result.split(',')[1])
+                            formData.append('foto_retro_filename', file2.name)
+                            formData.append('foto_retro_mimetype', file2.type)
+                            inviaFormData()
+                        }
+                        reader2.readAsDataURL(file2)
+                    } else {
+                        inviaFormData()
+                    }
+                }
+                reader1.readAsDataURL(file1)
+            } else {
+                inviaFormData()
+            }
+
+            function inviaFormData() {
+                fetch(scriptURL, { method: 'POST', body: formData })
+                    .then(response => response.json())
+                    .then(data => {
+                        messaggio.textContent = 'Dati inviati con successo!'
+                        messaggio.className = 'successo'
+                        form.reset()
+                        button.disabled = false
+                    })
+                    .catch(error => {
+                        messaggio.textContent = 'Errore nell\'invio: ' + error.message
+                        messaggio.className = 'errore'
+                        button.disabled = false
+                    })
+            }
         })
     </script>
 </body>
