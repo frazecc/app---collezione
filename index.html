@@ -150,17 +150,17 @@
             messaggio.style.display = 'block'
             button.disabled = true
 
-            const formData = new FormData()
+            const params = new URLSearchParams()
             
             // Aggiungi i campi di testo
-            formData.append('codice', form.codice.value)
-            formData.append('nome', form.nome.value)
-            formData.append('quantita', form.quantita.value)
-            formData.append('prezzo', form.prezzo.value)
-            formData.append('link_cardmarket', form.link_cardmarket.value)
-            formData.append('note', form.note.value)
+            params.append('codice', form.codice.value)
+            params.append('nome', form.nome.value)
+            params.append('quantita', form.quantita.value)
+            params.append('prezzo', form.prezzo.value)
+            params.append('link_cardmarket', form.link_cardmarket.value)
+            params.append('note', form.note.value)
 
-            // Conta quanti file abbiamo
+            // Processa le foto
             let filesProcessed = 0
             let totalFiles = 0
 
@@ -168,37 +168,34 @@
             if (form.foto_retro.files.length > 0) totalFiles++
 
             if (totalFiles === 0) {
-                // Nessun file, invia subito
-                inviaFormData()
+                inviaFormData(params)
             } else {
-                // Processa foto_fronte
                 if (form.foto_fronte.files.length > 0) {
                     const file = form.foto_fronte.files[0]
                     const reader = new FileReader()
                     reader.onload = () => {
                         const base64 = reader.result.split(',')[1]
-                        formData.append('foto_fronte_data', base64)
-                        formData.append('foto_fronte_filename', file.name)
-                        formData.append('foto_fronte_mime', file.type)
+                        params.append('foto_fronte', base64)
+                        params.append('foto_fronte_name', file.name)
+                        params.append('foto_fronte_type', file.type)
                         filesProcessed++
-                        if (filesProcessed === totalFiles) inviaFormData()
+                        if (filesProcessed === totalFiles) inviaFormData(params)
                     }
                     reader.readAsDataURL(file)
                 } else {
                     filesProcessed++
                 }
 
-                // Processa foto_retro
                 if (form.foto_retro.files.length > 0) {
                     const file = form.foto_retro.files[0]
                     const reader = new FileReader()
                     reader.onload = () => {
                         const base64 = reader.result.split(',')[1]
-                        formData.append('foto_retro_data', base64)
-                        formData.append('foto_retro_filename', file.name)
-                        formData.append('foto_retro_mime', file.type)
+                        params.append('foto_retro', base64)
+                        params.append('foto_retro_name', file.name)
+                        params.append('foto_retro_type', file.type)
                         filesProcessed++
-                        if (filesProcessed === totalFiles) inviaFormData()
+                        if (filesProcessed === totalFiles) inviaFormData(params)
                     }
                     reader.readAsDataURL(file)
                 } else {
@@ -206,8 +203,8 @@
                 }
             }
 
-            function inviaFormData() {
-                fetch(scriptURL, { method: 'POST', body: formData })
+            function inviaFormData(params) {
+                fetch(scriptURL, { method: 'POST', body: params })
                     .then(response => response.json())
                     .then(data => {
                         messaggio.textContent = 'Dati inviati con successo!'
