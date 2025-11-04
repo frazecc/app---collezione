@@ -7,31 +7,68 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 500px;
+            max-width: 600px;
             margin: 50px auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
-        input, button {
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"],
+        textarea {
             width: 100%;
             padding: 10px;
-            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             box-sizing: border-box;
-            font-size: 16px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
         }
         button {
+            width: 100%;
+            padding: 12px;
             background-color: #4CAF50;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
         }
         button:hover {
             background-color: #45a049;
         }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
         #messaggio {
             margin-top: 20px;
-            padding: 10px;
+            padding: 15px;
             display: none;
             border-radius: 4px;
+            text-align: center;
         }
         .successo {
             background-color: #d4edda;
@@ -46,10 +83,49 @@
     </style>
 </head>
 <body>
-    <h1>Collezione - Inserisci Dati</h1>
+    <h1>Collezione - Inserisci Dati Carta</h1>
     <form name="invio-dati">
-        <input name="dato" type="text" placeholder="Inserisci il dato" required>
-        <button type="submit">Invia</button>
+        <div class="form-group">
+            <label for="codice">Codice *</label>
+            <input name="codice" type="text" placeholder="Es. CHR001" required>
+        </div>
+
+        <div class="form-group">
+            <label for="nome">Nome *</label>
+            <input name="nome" type="text" placeholder="Nome della carta" required>
+        </div>
+
+        <div class="form-group">
+            <label for="quantita">Quantità *</label>
+            <input name="quantita" type="text" placeholder="Es. 1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="prezzo">Prezzo *</label>
+            <input name="prezzo" type="text" placeholder="Es. 3,50 €" required>
+        </div>
+
+        <div class="form-group">
+            <label for="link_cardmarket">Link Cardmarket</label>
+            <input name="link_cardmarket" type="text" placeholder="https://www.cardmarket.com/...">
+        </div>
+
+        <div class="form-group">
+            <label for="note">Note</label>
+            <textarea name="note" placeholder="Aggiungi note sulla carta..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="foto_fronte">Foto Fronte (URL)</label>
+            <input name="foto_fronte" type="text" placeholder="https://...">
+        </div>
+
+        <div class="form-group">
+            <label for="foto_retro">Foto Retro (URL)</label>
+            <input name="foto_retro" type="text" placeholder="https://...">
+        </div>
+
+        <button type="submit">Invia Dati</button>
     </form>
     <div id="messaggio"></div>
 
@@ -57,6 +133,7 @@
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyS-OILPoXIoRpt6qlB7ltPP0sjzSV3tb9jIHf7amCQvl7xD--bmRnHZje8IN8bcSYoEQ/exec'
         const form = document.forms['invio-dati']
         const messaggio = document.getElementById('messaggio')
+        const button = form.querySelector('button')
 
         form.addEventListener('submit', e => {
             e.preventDefault()
@@ -64,6 +141,7 @@
             messaggio.textContent = 'Invio in corso...'
             messaggio.className = ''
             messaggio.style.display = 'block'
+            button.disabled = true
 
             fetch(scriptURL, { method: 'POST', body: new FormData(form)})
                 .then(response => response.json())
@@ -71,10 +149,12 @@
                     messaggio.textContent = 'Dati inviati con successo!'
                     messaggio.className = 'successo'
                     form.reset()
+                    button.disabled = false
                 })
                 .catch(error => {
                     messaggio.textContent = 'Errore nell\'invio: ' + error.message
                     messaggio.className = 'errore'
+                    button.disabled = false
                 })
         })
     </script>
